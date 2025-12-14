@@ -30,7 +30,22 @@ func PostArticleHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func ArticleListHandler(w http.ResponseWriter, req *http.Request) {
-	io.WriteString(w, "Article List\n")
+	queryMap := req.URL.Query()
+
+	var page int
+	if p, ok := queryMap["page"]; ok && len(p) > 0 {
+		var err error
+		page, err = strconv.Atoi(p[0])
+		if err != nil || page < 1 {
+			http.Error(w, "Invalid query parameter (in handler)", http.StatusBadRequest)
+			return
+		}
+	} else {
+		page = 1
+	}
+
+	resString := fmt.Sprintf("Article List (page %d)\n", page)
+	io.WriteString(w, resString)
 }
 
 func ArticleDetailHandler(w http.ResponseWriter, req *http.Request) {

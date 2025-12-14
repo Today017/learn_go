@@ -52,3 +52,38 @@ go get -u github.com/gorilla/mux
 - `strconv` パッケージ
   - 文字列と他の基本データ型（int、floatなど）を相互変換するためのパッケージ
   - `strconv.Atoi` で文字列をintに変換できる
+
+### 1-6 クエリパラメータ
+- URLの?以降に含まれるキーと値のペア
+    - `https://kenkoooo.com/atcoder/#/user/Today03?userPageTab=submissions`
+    - の `?userPageTab=submissions` の部分みたいなやつ
+- ユーザー側でkey-valueのセットを自由にURLに追加できる
+
+```go
+type Request struct {
+    URL *url.URL
+    ...
+}
+
+type URL struct {
+    ...
+    Scheme  string // http, https
+    Host    string // example.com
+    Path    string // /atcoder/#/user/Today03
+    RawQuery string // userPageTab=submissions
+    Fragment string // #以下の文字列
+}
+```
+
+- `func (u *URL) Query() Values`
+    - URL構造体のメソッド
+    - map[string][]string型を返す
+
+
+### まとめ
+- 基本的なWebサーバーの実装方法を勉強した
+- WebサーバーがHTTPリクエストを受け取ってレスポンスを返すまでの流れを理解した
+    - ルーター：HTTPリクエストのURLパスに基づいてハンドラ関数を呼び出す
+    - ハンドラ関数：HTTPリクエストを処理してレスポンスを返す
+    - HTTPメソッドの制限
+    - パスパラメータとクエリパラメータの取得方法
