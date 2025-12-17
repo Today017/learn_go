@@ -2,7 +2,7 @@
 
 [APIを作りながら進むGo中級者への道](https://techbookfest.org/product/jXDAEU1dR53kbZkgtDm9zx?productVariantID=dvjtgpjw8VDTXNqKaanTVi)
 
-2025/12/13勉強開始
+2025/12/13勉強開始 Thanks to そま
 
 ## 1
 ### 1-3
