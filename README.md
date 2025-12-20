@@ -101,3 +101,6 @@ fmt.Printf("%+v\n", article)
 ```
 - `%+v` で構造体のフィールド名と値を表示できる
 
+### 2-2 json
+`func Marshal(v any) ([]byte, error)` Goの構造体からjsonを作るための関数
+
