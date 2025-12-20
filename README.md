@@ -104,3 +104,10 @@ fmt.Printf("%+v\n", article)
 ### 2-2 json
 `func Marshal(v any) ([]byte, error)` Goの構造体からjsonを作るための関数
 
+### 2-3
+- Go構造体とjsonキーの命名規則
+    - Go構造体はキャメルケース、jsonキーはスネークケース
+
+- `json` タグを使ってGo構造体のフィールドとjsonキーの対応を指定できる
+
+- これ関数のオプションとかで一括でできないのかな
