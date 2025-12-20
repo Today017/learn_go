@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -28,6 +29,21 @@ func HelloHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func PostArticleHandler(w http.ResponseWriter, req *http.Request) {
+	// var reqBodybuffer []byte
+	length, err := strconv.Atoi(req.Header.Get("Content-Length"))
+	if err != nil {
+		http.Error(w, "Cannot get content length\n", http.StatusBadRequest)
+		return
+	}
+	reqBodybuffer := make([]byte, length) //length分だけ配列の長さを確保しておく
+
+	if _, err := req.Body.Read(reqBodybuffer); !errors.Is(err, io.EOF) { // reqBodyBufferに書き込む
+		http.Error(w, "Fail to get request body\n", http.StatusBadRequest)
+		return
+	}
+
+	defer req.Body.Close() // defer: 関数の最後にかならず実行される
+
 	article := models.Article1
 
 	jsonData, err := json.Marshal(article)

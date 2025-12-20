@@ -126,3 +126,31 @@ fmt.Printf("%+v\n", article)
     - `string` から `[]byte` への変換は `[]byte(s)`、`[]byte` から `string` への変換は `string(b)`
 
 - `curl` でクエリパラメータを指定するときはURLを`""`で囲むこと
+
+### 2-5 HTTPリクエストボディからjsonを読み込む
+- HTTPリクエストの中身
+    - ヘッダー : メタデータ
+    - ボディ : リクエストの本体
+    - メソッド : リクエストの種類（GET、POSTなど）
+    - URL : リクエストの宛先
+
+- ボディ : リクエストの本体
+- `req.Body` でHTTPリクエストのボディを取得できる
+
+```go
+type Request struct {
+    Method string
+    URL *url.URL
+    Body io.ReadCloser // リクエストボディを格納する
+}
+```
+
+- `io.ReadCloser` 型（インターフェース）
+    - `Read(p []byte) (n int, err error)`
+        - ボディの中身を p に読み込む
+    - `Close() error`
+        - ボディの中身を読み終わったときにcloseする
+
+- `errors.Is(err, io.EOF)` でボディの終端に達したか確認できる
+
+- 
