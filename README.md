@@ -153,4 +153,11 @@ type Request struct {
 
 - `errors.Is(err, io.EOF)` でボディの終端に達したか確認できる
 
-- 
+### 2-6 jsonをGo構造体に変換する変換する
+- `func Unmarshal(data []byte, v any) error`
+    - jsonデータをGo構造体に変換する関数
+    - `v` は `&` をつける必要あり？
+
+
+- `curl "URL" -X POST -d 'json'`
+    - `-d` オプションでリクエストボディにデータを含めることができる
