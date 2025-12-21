@@ -153,7 +153,7 @@ type Request struct {
 
 - `errors.Is(err, io.EOF)` でボディの終端に達したか確認できる
 
-### 2-6 jsonをGo構造体に変換する変換する
+### 2-6 jsonをGo構造体に変換する
 - `func Unmarshal(data []byte, v any) error`
     - jsonデータをGo構造体に変換する関数
     - `v` は `&` をつける必要あり？
@@ -161,3 +161,90 @@ type Request struct {
 
 - `curl "URL" -X POST -d 'json'`
     - `-d` オプションでリクエストボディにデータを含めることができる
+
+### 2-7 デコーダ・エンコーダ
+- メモリとストリーム
+    - メモリ: 必要な情報をまとめて扱う
+        - `[]byte`
+    - ストリーム: 必要な情報は少しずつ流れてくるものとして扱う
+        - 標準入力とか
+
+- `io.Reader` / `io.Writer` インターフェース
+    - `io.Reader`
+        - `Read(p []byte) (n int, err error)`: ストリームからデータを読み込んでバイトスライス（＝メモリ）に読み込む
+    - `io.Writer`
+        - `Write(p []byte) (n int, err error)`: バイトスライス（＝メモリ）からストリームにデータを書き出す
+
+- `json.Decoder` / `json.Encoder`
+    - `json.Decoder`
+        - ストリームから得られるデータをGo構造体に変換する
+        - `func NewDecoder(r io.Reader) *Decoder`
+            - `r io.Reader` で指定されるストリームから流れてくるデータをjsonデコードするためのデコーダを作成する
+            - `os.Stdin` や `req.Body` など
+    - `json.Encoder`
+        - Go構造体をストリームにjson形式で書き出す
+        - `func NewEncoder(w io.Writer) *Encoder`
+            - `w io.Writer` で指定されるストリームにjsonエンコードしたデータを書き出すためのエンコーダを作成する
+            - `os.Stdout` や `w http.ResponseWriter` など
+
+#### リファクタリング
+- デコード処理
+    - リファクタリング前
+        - `req.Body.Read(buffer)`
+        - バイトスライスにメモリを書き出す→バイトスライスからGo構造体に変換
+    - リファクタリング後
+        - `json.NewDecoder(req.Body).Decode(&reqArticle)`
+        - ストリームから直接Go構造体に変換
+
+```go
+// リファクタリング前
+buffer := make([]byte, req.ContentLength)
+_, err := req.Body.Read(buffer)
+if err != nil && !errors.Is(err, io.EOF) {
+    http.Error(w, "Failed to read request body", http.StatusInternalServerError)
+    return
+}
+var reqArticle models.Article
+err = json.Unmarshal(buffer, &reqArticle)
+if err != nil {
+    http.Error(w, "Failed to unmarshal JSON", http.StatusBadRequest)
+    return
+}
+
+// リファクタリング後
+var reqArticle models.Article
+err := json.NewDecoder(req.Body).Decode(&reqArticle)
+if err != nil {
+    http.Error(w, "Failed to decode JSON", http.StatusBadRequest)
+    return
+}
+```
+
+- エンコード処理
+    - リファクタリング前
+        - `json.Marshal(article)`
+        - Go構造体からバイトスライスに変換→バイトスライスをストリームに書き出す
+    - リファクタリング後
+        - `json.NewEncoder(w).Encode(article)`
+        - Go構造体をストリームに直接書き出す
+
+```go
+// リファクタリング前
+jsonData, err := json.Marshal(article)
+if err != nil {
+    http.Error(w, "Failed to marshal JSON", http.StatusInternalServerError)
+    return
+}
+w.Write(jsonData)
+// リファクタリング後
+err := json.NewEncoder(w).Encode(article)
+if err != nil {
+    http.Error(w, "Failed to encode JSON", http.StatusInternalServerError)
+    return
+}
+```
+
+### 2章まとめ
+- Go構造体を使ってHTTPリクエストやレスポンスのモデルを定義する方法を学んだ
+- jsonパッケージを使ってGo構造体とjsonデータを相互変換する方法を学んだ
+- メモリとストリームの違いを勉強し、ストリームから直接Go構造体に変換したり、Go構造体をストリームに直接書き出したりする方法を学んだ
