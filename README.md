@@ -248,3 +248,49 @@ if err != nil {
 - Go構造体を使ってHTTPリクエストやレスポンスのモデルを定義する方法を学んだ
 - jsonパッケージを使ってGo構造体とjsonデータを相互変換する方法を学んだ
 - メモリとストリームの違いを勉強し、ストリームから直接Go構造体に変換したり、Go構造体をストリームに直接書き出したりする方法を学んだ
+
+## 3
+### 3-1 
+
+```bash
+docker-compose up
+```
+
+```bash
+today@MacBook-Pro-10 db % mysql -h 127.0.0.1 -u docker samp
+ledb -p < createTable.sql 
+```
+```bash
+cat createTable.sql | docker exec -i db-for-go mysql -u<docker_user> -p<docker_user> sampledb && echo 'OK' || echo 'FAILED'
+```
+localhost上で動いているMySQLサーバー内にあるsampleデータベースに対して、dockerユーザーでcreateTable.sqlのクエリを実行する
+
+```bash
+docker exec -it db-for-go mysql -u<docker_user> -p<docker_pass> sampledb
+```
+
+```bash
+mysql> show columns from articles;
++------------+------------------+------+-----+-------------------+----------------+
+| Field      | Type             | Null | Key | Default           | Extra          |
++------------+------------------+------+-----+-------------------+----------------+
+| article_id | int(10) unsigned | NO   | PRI | NULL              | auto_increment |
+| title      | varchar(100)     | NO   |     | NULL              |                |
+| contents   | text             | NO   |     | NULL              |                |
+| username   | varchar(100)     | NO   |     | NULL              |                |
+| nice       | int(11)          | NO   |     | 0                 |                |
+| created_at | datetime         | NO   |     | CURRENT_TIMESTAMP |                |
++------------+------------------+------+-----+-------------------+----------------+
+6 rows in set (0.00 sec)
+
+mysql> show columns from comments;
++------------+------------------+------+-----+---------+----------------+
+| Field      | Type             | Null | Key | Default | Extra          |
++------------+------------------+------+-----+---------+----------------+
+| comment_id | int(10) unsigned | NO   | PRI | NULL    | auto_increment |
+| article_id | int(10) unsigned | NO   | MUL | NULL    |                |
+| message    | text             | NO   |     | NULL    |                |
+| created_at | datetime         | YES  |     | NULL    |                |
++------------+------------------+------+-----+---------+----------------+
+4 rows in set (0.03 sec)
+```
