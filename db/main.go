@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"dbsample/models"
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -28,10 +29,30 @@ func main() {
 	}
 	defer db.Close()
 
-	//Pingメソッド: データベースへのコネクションが生きているかの確認
-	if err := db.Ping(); err != nil {
+	const sqlStr = `
+		select title, contents, username, nice
+		from articles;
+	`
+	rows, err := db.Query(sqlStr)
+	// rows: sql.Rows
+	if err != nil {
 		fmt.Println(err)
-	} else {
-		fmt.Println("connect to DB")
+		return
 	}
+	defer rows.Close()
+
+	articleArray := make([]models.Article, 0)
+	for rows.Next() { // while と同じ感じ？
+		var article models.Article
+		// 指定した変数ポインタに読み出す
+		err := rows.Scan(&article.Title, &article.Contents, &article.UserName, &article.NiceNum)
+
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			articleArray = append(articleArray, article)
+		}
+	}
+
+	fmt.Printf("%+v\n", articleArray)
 }

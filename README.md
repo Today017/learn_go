@@ -259,6 +259,9 @@ docker-compose up
 ```bash
 today@MacBook-Pro-10 db % mysql -h 127.0.0.1 -u docker samp
 ledb -p < createTable.sql 
+# これは多分エラーになるので以下のコマンドで代用
+
+docker exec -it db-for-go mysql -u docker -p
 ```
 ```bash
 cat createTable.sql | docker exec -i db-for-go mysql -u<docker_user> -p<docker_user> sampledb && echo 'OK' || echo 'FAILED'
