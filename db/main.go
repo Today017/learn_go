@@ -29,6 +29,35 @@ func main() {
 	}
 	defer db.Close()
 
+	// データ挿入
+	{
+		article := models.Article{
+			Title:    "insert test",
+			Contents: "Can I insert data correctly?",
+			UserName: "Today",
+		}
+		const sqlStr = `
+			insert into articles (
+				title, contents, username, nice, created_at
+			)
+			values (
+				?, ?, ?, 0, now()
+			);
+		`
+
+		result, err := db.Exec(sqlStr, article.Title, article.Contents, article.UserName)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		// result: sql.Result型
+		fmt.Println(result.LastInsertId()) // 挿入したデータがデータベース内で何番目のデータか
+		fmt.Println(result.RowsAffected()) // 実行によって何行の変更が行われたか
+
+		fmt.Println("==================")
+	}
+
 	{
 		const sqlStr = `
 			select title, contents, username, nice, created_at
