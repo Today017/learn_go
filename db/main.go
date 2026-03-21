@@ -44,8 +44,15 @@ func main() {
 	articleArray := make([]models.Article, 0)
 	for rows.Next() { // while と同じ感じ？
 		var article models.Article
-		// 指定した変数ポインタに読み出す
-		err := rows.Scan(&article.Title, &article.Contents, &article.UserName, &article.NiceNum)
+		// // 指定した変数ポインタに読み出す
+		// err := rows.Scan(&article.Title, &article.Contents, &article.UserName, &article.NiceNum)
+
+		var createTime sql.NullTime
+		err := rows.Scan(&article.Title, &article.Contents, &article.UserName, &article.NiceNum, &createTime)
+
+		if createTime.Valid {
+			article.CreatedAt = createTime.Time
+		}
 
 		if err != nil {
 			fmt.Println(err)
