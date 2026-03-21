@@ -98,7 +98,7 @@ func main() {
 	}
 
 	{ // 1行だけ読み出す場合の書き方
-		articleID := 1000
+		articleID := 1
 		const sqlStr = `
 			select *
 			from articles
@@ -123,5 +123,48 @@ func main() {
 		}
 
 		fmt.Printf("%+v\n", article)
+	}
+
+	{ // トランザクション
+		tx, err := db.Begin()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		article_id := 1
+		const sqlGetNice = `
+			select nice
+			from articles
+			where article_id = ?
+		`
+
+		row := tx.QueryRow(sqlGetNice, article_id)
+		if err := row.Err(); err != nil {
+			fmt.Println(err)
+			tx.Rollback()
+			return
+		}
+
+		var nicenum int
+		err = row.Scan(&nicenum)
+		if err != nil {
+			fmt.Println(err)
+			tx.Rollback()
+			return
+		}
+
+		const sqlUpdateNice = `
+			update articles
+			set nice = ? where article_id = ?
+		`
+		_, err = tx.Exec(sqlUpdateNice, nicenum+1, article_id)
+		if err != nil {
+			fmt.Println(err)
+			tx.Rollback()
+			return
+		}
+
+		tx.Commit()
 	}
 }
