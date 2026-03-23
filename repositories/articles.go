@@ -91,7 +91,7 @@ func SelectArticleDetail(db *sql.DB, articleID int) (models.Article, error) {
 	var article models.Article
 	var createdTime sql.NullTime
 	err := row.Scan(
-		&articleID, &article.Title, &article.Contents, &article.UserName, &article.NiceNum, &createdTime,
+		&article.ID, &article.Title, &article.Contents, &article.UserName, &article.NiceNum, &createdTime,
 	)
 	if err != nil {
 		return models.Article{}, err
