@@ -54,10 +54,10 @@ func SelectCommentList(db *sql.DB, articleID int) ([]models.Comment, error) {
 			&comment.CommentID,
 			&comment.ArticleID,
 			&comment.Message,
-			createdTime,
+			&createdTime,
 		)
 		if err != nil {
-			continue
+			return []models.Comment{}, err
 		}
 
 		if createdTime.Valid {
