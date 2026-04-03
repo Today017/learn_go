@@ -307,3 +307,56 @@ mysql> show columns from comments;
 2. クエリを実行する
 3. 全部成功したら、コミットして結果を確定させる
 4. どれかが失敗したら、ロールバックしてなかったことにする
+
+
+## 4
+### 4-2
+
+テーブルドリブンテスト
+
+```go
+tests := []struct {
+    testTitle string
+    exptected models.Article
+}{
+    {
+        testTitle: "subtest1",
+        exptected: models.Article{
+            ...
+        },
+    }, {
+        testTitle: "subtest2",
+        exptected: models.Article{
+            ...
+        },
+    },
+}
+
+for _, test := range tests {
+    t.Run(test.testTitle, func(t *testing.T) {
+        got, err := repositories.SelectArticleDetail(db, test.exptected.ID)
+        if err != nil {
+            t.Fatal(err)
+        }
+
+        ...
+    })
+}
+```
+
+### 4-3
+
+前処理と後処理を共通化する。
+グローバル変数を定義して `setup()` `teardown()` に前処理を書く。
+
+`TestMain(m *testing.M)` という関数を定義して一連の処理の流れを書く。
+
+```go
+func TestMain(m *testing.M) {
+	setup()
+
+	m.Run()
+
+	teardown()
+}
+```
