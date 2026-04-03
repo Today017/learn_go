@@ -5,6 +5,7 @@ import (
 
 	"github.com/Today017/learn_go/models"
 	"github.com/Today017/learn_go/repositories"
+	"github.com/Today017/learn_go/repositories/testdata"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -17,17 +18,7 @@ func TestSelectCommentList(t *testing.T) {
 		{
 			testTitle: "subtest1",
 			articleID: models.Article1.ID,
-			expected: []models.Comment{
-				{
-					CommentID: 1,
-					ArticleID: 1,
-					Message:   "1st commnet yeah",
-				}, {
-					CommentID: 2,
-					ArticleID: 1,
-					Message:   "welcome",
-				},
-			},
+			expected:  testdata.CommentTestData,
 		}, {
 			testTitle: "subtest2",
 			articleID: models.Article2.ID,

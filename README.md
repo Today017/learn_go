@@ -383,3 +383,92 @@ t.Run(testcase.testTitle, func(t *testing.T) {
     fmt.Println(testcase.testTitle)
 })
 ```
+
+### 4-5
+
+
+#### 概要
+Goのテスト実行時に、MySQL（Docker）のテストデータを初期化する処理（`setupDB.sql`, `cleanupDB.sql`）が失敗する問題が発生。
+複数の原因が絡み合っていたため、エラー出力を可視化しながら段階的に原因を特定・解消した。
+
+---
+
+#### バグ1：ターミナルからSQLが実行できない（認証プラグインエラー）
+
+##### 🔍 発見の経緯
+ターミナルから直接 `mysql` コマンドでファイル流し込み（`<`）を試したところ、以下のエラーが直接出力された。
+> `ERROR 2059 (HY000): Authentication plugin 'mysql_native_password' cannot be loaded`
+
+##### 💣 原因
+- **環境の不一致**: Mac側のMySQLクライアント（Homebrew）が **v9.5.0** と新しく、MySQL 9.0で廃止された古い認証方式（`mysql_native_password`）に非対応だった。
+- サーバー側（DockerのMySQL）は古い認証方式を求めてきたため、クライアント側がパニックを起こしていた。
+
+##### 💊 解決策
+Macローカルの `mysql` コマンドを使うのをやめ、**`docker exec -i` を経由してコンテナ内部の（バージョンが一致している） `mysql` コマンドを直接叩く**アプローチに変更した。
+
+---
+
+#### バグ2：Goから実行すると `exit status 1` で落ちる（エラーの隠蔽）
+
+##### 🔍 発見の経緯
+バグ1の解決策をGoの `exec.Command` に組み込んで `go test` を実行したが、詳細な理由が表示されずただ **`exit status 1`** とだけ出力されてテストが落ちた。
+
+##### 💣 原因
+Goの `exec.Command` は、デフォルトでは**外部コマンド（今回ならMySQL）の標準エラー出力（`Stderr`）をターミナルに表示せず飲み込んでしまう仕様**になっている。
+そのため、実際にはMySQL側で何らかのエラーが起きているのに、Go側からは「とにかく失敗した」ということしか分からない状態になっていた。
+
+##### 💊 解決策
+原因を特定するため、Goのコードを修正し、**MySQLの標準エラー出力をキャッチして画面に表示する**仕組み（`bytes.Buffer`）を追加した。（※これが最大の突破口！）
+
+---
+
+#### バグ3：隠れていたSQLの構文エラー（タイポ）
+
+結局原因はこれだった
+
+---
+
+#### 最終的な実装（修正完了版）
+
+これらの知見を踏まえ、今後の拡張も考慮して「指定したSQLファイルをDocker経由で実行し、エラーを逃さず表示する共通関数」を作成した。
+
+```go
+import (
+	"bytes"
+	"fmt"
+	"os"
+	"os/exec"
+)
+
+// execSQLFile は指定されたSQLファイルをDockerコンテナ内のMySQLで実行する
+func execSQLFile(filePath string) error {
+	// 1. ファイル読み込み
+	file, err := os.Open(filePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// 2. Docker経由でMySQLコマンドを準備（Macのバージョン依存を回避）
+	cmd := exec.Command(
+		"docker", "exec", "-i", "db-for-go",
+		"mysql", "-u", "docker", "--password=docker", "sampledb",
+	)
+
+	// 3. 標準入力とエラー出力を設定
+	cmd.Stdin = file            // ファイルの内容を流し込む
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr        // MySQLの詳細なエラーメッセージを捕まえる
+
+	// 4. 実行とエラーハンドリング
+	if err := cmd.Run(); err != nil {
+		// 捕まえたMySQLのエラー詳細をGoのエラーとして返す
+		return fmt.Errorf("SQL実行エラー: %v\n【詳細】: %s", err, stderr.String())
+	}
+	return nil
+}
+```
+
+#### 💡 学んだこと・教訓
+* 外部コマンド呼び出しで `exit status 1` のような抽象的なエラーが出た時は、**真っ先に `cmd.Stderr` をキャッチしてログに出す**。これがデバッグの基本にして最大の近道。
+* 認証プラグインエラーなどの環境依存バグと、タイポなどの単純なバグが同時に発生すると混乱しやすい。ログを出力して**「今どこで（Mac? Docker? Go? SQL?）エラーが起きているか」を切り分ける**ことが重要。
