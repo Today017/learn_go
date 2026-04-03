@@ -88,7 +88,16 @@ func TestInsertArticle(t *testing.T) {
 	}
 
 	if newArticle.ID <= 0 {
-		t.Errorf("new article id is exptected >=0 but got %d\n", newArticle.ID)
+		t.Errorf("new article id is expected >=0 but got %d\n", newArticle.ID)
+	}
+	if newArticle.Title != article.Title {
+		t.Errorf("article title is expected %q but got %q\n", article.Title, newArticle.Title)
+	}
+	if newArticle.Contents != article.Contents {
+		t.Errorf("article contents is expected %q but got %q\n", article.Contents, newArticle.Contents)
+	}
+	if newArticle.UserName != article.UserName {
+		t.Errorf("article user name is expected %q but got %q\n", article.UserName, newArticle.UserName)
 	}
 
 	t.Cleanup(func() {
@@ -97,5 +106,31 @@ func TestInsertArticle(t *testing.T) {
 			where title = ?;
 		`
 		testDB.Exec(sqlStr, article.Title)
+	})
+}
+
+func TestUpdateNiceNum(t *testing.T) {
+	testID := 1
+
+	err := repositories.UpdateNiceNum(testDB, testID)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	expectedNiceNum := 4
+	article, err := repositories.SelectArticleDetail(testDB, testID)
+
+	if article.NiceNum != expectedNiceNum {
+		t.Errorf("article nice num is expected %d but got %d\n", expectedNiceNum, article.NiceNum)
+	}
+
+	t.Cleanup(func() {
+		const sqlUpdateNice = `
+			update articles
+			set nice = ? where article_id = ?;
+		`
+
+		testDB.Exec(sqlUpdateNice, expectedNiceNum-1, testID)
 	})
 }
