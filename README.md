@@ -360,3 +360,26 @@ func TestMain(m *testing.M) {
 	teardown()
 }
 ```
+
+### 4-4
+
+個別のテストで後処理を書きたい場合
+- insertのテストをしたあとそのデータを消す、など
+
+`testing.T::Cleanup()` を使って、テスト後に行いたい処理を書く。
+
+```go
+t.Cleanup(func() {
+    ...
+});
+```
+
+`defer func() {...}()` ではだめなのか？
+- 以下のような書き方をするとサブテストが並列で回るようになるが、このときに `defer` だと後処理→サブテストの順番で走ってしまう
+
+```go
+t.Run(testcase.testTitle, func(t *testing.T) {
+    t.Parallel() // これがあることで、サブテストが並列に走るようになる
+    fmt.Println(testcase.testTitle)
+})
+```
