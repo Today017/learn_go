@@ -36,12 +36,12 @@ func InsertArticle(db *sql.DB, article models.Article) (models.Article, error) {
 func SelectArticleList(db *sql.DB, page int) ([]models.Article, error) {
 	const sqlStr = `
 		select article_id, title, contents, username, nice
-		fromt articles
+		from articles
 		limit ? offset ?;
 	`
 
 	artcileNumPerPage := 5
-	offset := (artcileNumPerPage - 1) * page
+	offset := (page - 1) * artcileNumPerPage
 
 	rows, err := db.Query(sqlStr, artcileNumPerPage, offset)
 	if err != nil {
@@ -52,21 +52,16 @@ func SelectArticleList(db *sql.DB, page int) ([]models.Article, error) {
 	articleArray := make([]models.Article, 0)
 	for rows.Next() {
 		var article models.Article
-		var createdTime sql.NullTime
 
 		err := rows.Scan(
 			&article.ID,
 			&article.Title,
 			&article.Contents,
 			&article.UserName,
-			createdTime,
+			&article.NiceNum,
 		)
 		if err != nil {
 			continue
-		}
-
-		if createdTime.Valid {
-			article.CreatedAt = createdTime.Time
 		}
 
 		articleArray = append(articleArray, article)
