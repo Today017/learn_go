@@ -45,7 +45,7 @@ func SelectArticleList(db *sql.DB, page int) ([]models.Article, error) {
 
 	rows, err := db.Query(sqlStr, artcileNumPerPage, offset)
 	if err != nil {
-		return []models.Article{}, err
+		return nil, err
 	}
 	defer rows.Close()
 

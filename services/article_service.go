@@ -52,13 +52,13 @@ func PostArticeService(article models.Article) (models.Article, error) {
 func GetArticleListService(page int) ([]models.Article, error) {
 	db, err := connectDB()
 	if err != nil {
-		return []models.Article{}, err
+		return nil, err
 	}
 	defer db.Close()
 
 	articleList, err := repositories.SelectArticleList(db, page)
 	if err != nil {
-		return []models.Article{}, err
+		return nil, err
 	}
 
 	return articleList, nil

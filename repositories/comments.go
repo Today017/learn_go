@@ -41,7 +41,7 @@ func SelectCommentList(db *sql.DB, articleID int) ([]models.Comment, error) {
 
 	rows, err := db.Query(sqlStr, articleID)
 	if err != nil {
-		return []models.Comment{}, err
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -57,7 +57,7 @@ func SelectCommentList(db *sql.DB, articleID int) ([]models.Comment, error) {
 			&createdTime,
 		)
 		if err != nil {
-			return []models.Comment{}, err
+			return nil, err
 		}
 
 		if createdTime.Valid {
