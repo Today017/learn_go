@@ -3,11 +3,11 @@ package handlers
 import (
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/Today017/learn_go/models"
+	"github.com/Today017/learn_go/services"
 	"github.com/gorilla/mux"
 )
 
@@ -29,12 +29,13 @@ func HelloHandler(w http.ResponseWriter, req *http.Request) {
 
 func PostArticleHandler(w http.ResponseWriter, req *http.Request) {
 	var reqArticle models.Article
+	// ここで、reqArticleにJSONのなかみをデコードする
 	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil { // &はなんだっけ
 		http.Error(w, "Fail to decode json\n", http.StatusBadRequest)
 		return
 	}
 
-	article := reqArticle
+	article, _ := services.PostArticeService(reqArticle)
 	json.NewEncoder(w).Encode(article)
 }
 
@@ -53,34 +54,37 @@ func ArticleListHandler(w http.ResponseWriter, req *http.Request) {
 		page = 1
 	}
 
-	log.Println(page)
-
-	articles := []models.Article{models.Article1, models.Article2}
+	articles, _ := services.GetArticleListService(page)
 	json.NewEncoder(w).Encode(articles)
 }
 
 func ArticleDetailHandler(w http.ResponseWriter, req *http.Request) {
-	articleID := mux.Vars(req)["id"]
-	log.Println(articleID)
-	article := models.Article1
+	articleID, _ := strconv.Atoi(mux.Vars(req)["id"])
+
+	article, _ := services.GetArticleService(articleID)
 	json.NewEncoder(w).Encode(article)
 }
 
 func PostNiceHandler(w http.ResponseWriter, req *http.Request) {
-	var article models.Article
-	if err := json.NewDecoder(req.Body).Decode(&article); err != nil {
+	// 記事ごと引数で受け取る形でいいの？
+	var reqArticle models.Article
+	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil {
 		http.Error(w, "Fail to decode json\n", http.StatusBadRequest)
 		return
 	}
+
+	article, _ := services.PostNiceService(reqArticle)
 	json.NewEncoder(w).Encode(article)
 }
 
 func PostCommentHandler(w http.ResponseWriter, req *http.Request) {
-	var comment models.Comment
-	if err := json.NewDecoder(req.Body).Decode(&comment); err != nil {
+	var reqComment models.Comment
+	if err := json.NewDecoder(req.Body).Decode(&reqComment); err != nil {
 		http.Error(w, "Fail to decode json\n", http.StatusBadRequest)
 		return
 	}
+
+	comment, _ := services.PostCommentService(reqComment)
 	json.NewEncoder(w).Encode(comment)
 }
 
