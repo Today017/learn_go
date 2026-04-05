@@ -78,5 +78,6 @@ func PostNiceService(article models.Article) (models.Article, error) {
 		return models.Article{}, err
 	}
 
+	article.NiceNum++
 	return article, nil
 }
