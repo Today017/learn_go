@@ -17,11 +17,11 @@ func TestSelectCommentList(t *testing.T) {
 	}{
 		{
 			testTitle: "subtest1",
-			articleID: models.Article1.ID,
+			articleID: testdata.ArticleTestData[0].ID,
 			expected:  testdata.CommentTestData,
 		}, {
 			testTitle: "subtest2",
-			articleID: models.Article2.ID,
+			articleID: testdata.ArticleTestData[1].ID,
 			expected:  []models.Comment{},
 		},
 	}
