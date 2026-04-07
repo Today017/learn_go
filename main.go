@@ -8,8 +8,8 @@ import (
 	"os"
 
 	"github.com/Today017/learn_go/controllers"
+	"github.com/Today017/learn_go/routers"
 	"github.com/Today017/learn_go/services"
-	"github.com/gorilla/mux"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -35,19 +35,7 @@ func main() {
 
 	ser := services.NewMyAppService(db)
 	con := controllers.NewMyAppController(ser)
-	r := mux.NewRouter()
-
-	//.Methods(...)でHTTPメソッドを制限
-	//ハンドラ関数内でのメソッドチェックが不要になり、違うのが来たら自動で405を返してくれる
-	//% curl http://localhost:8080/hello -x POST
-	//curl: (5) Could not resolve proxy: POST
-
-	// r.HandleFunc("/hello", con.HelloHandler).Methods(http.MethodGet)
-	r.HandleFunc("/article", con.PostArticleHandler).Methods(http.MethodPost)
-	r.HandleFunc("/article/list", con.ArticleListHandler).Methods(http.MethodGet)
-	r.HandleFunc("/article/{id:[0-9]+}", con.ArticleDetailHandler).Methods(http.MethodGet)
-	r.HandleFunc("/article/nice", con.PostNiceHandler).Methods(http.MethodPost)
-	r.HandleFunc("/comment", con.PostCommentHandler).Methods(http.MethodPost)
+	r := routers.NewRouter(con)
 
 	//ターミナルへのログ表示
 	log.Println("server start at port 8080")
