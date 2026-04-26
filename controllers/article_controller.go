@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/Today017/learn_go/apperrors"
 	"github.com/Today017/learn_go/controllers/services"
 	"github.com/Today017/learn_go/models"
 	"github.com/gorilla/mux"
@@ -21,6 +22,7 @@ func NewArticleController(s services.AritcleServicer) *ArticleController {
 func (c *ArticleController) PostArticleHandler(w http.ResponseWriter, req *http.Request) {
 	var reqArticle models.Article
 	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil {
+		err = apperrors.ReqBodyDecodeFailed.Wrap(err, "bad request body")
 		http.Error(w, "Fail to decode json\n", http.StatusBadRequest)
 		return
 	}
@@ -41,6 +43,7 @@ func (c *ArticleController) ArticleListHandler(w http.ResponseWriter, req *http.
 		var err error
 		page, err = strconv.Atoi(p[0])
 		if err != nil || page < 1 {
+			err = apperrors.BadParam.Wrap(err, "queryparam must be number")
 			http.Error(w, "Invalid query parameter (in handler)", http.StatusBadRequest)
 			return
 		}
@@ -59,6 +62,7 @@ func (c *ArticleController) ArticleListHandler(w http.ResponseWriter, req *http.
 func (c *ArticleController) ArticleDetailHandler(w http.ResponseWriter, req *http.Request) {
 	articleID, err := strconv.Atoi(mux.Vars(req)["id"])
 	if err != nil {
+		err = apperrors.BadParam.Wrap(err, "queryparam must be number")
 		http.Error(w, "Invalid query parameter", http.StatusBadRequest)
 		return
 	}
@@ -74,6 +78,7 @@ func (c *ArticleController) PostNiceHandler(w http.ResponseWriter, req *http.Req
 	// 記事ごと引数で受け取る形でいいの？
 	var reqArticle models.Article
 	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil {
+		err = apperrors.ReqBodyDecodeFailed.Wrap(err, "bad request body")
 		http.Error(w, "Fail to decode json\n", http.StatusBadRequest)
 		return
 	}
