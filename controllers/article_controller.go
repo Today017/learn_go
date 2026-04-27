@@ -23,13 +23,13 @@ func (c *ArticleController) PostArticleHandler(w http.ResponseWriter, req *http.
 	var reqArticle models.Article
 	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil {
 		err = apperrors.ReqBodyDecodeFailed.Wrap(err, "bad request body")
-		http.Error(w, "Fail to decode json\n", http.StatusBadRequest)
+		apperrors.ErrorHandler(w, req, err)
 		return
 	}
 
 	article, err := c.service.PostArticeService(reqArticle)
 	if err != nil {
-		http.Error(w, "fail internal exec\n", http.StatusInternalServerError)
+		apperrors.ErrorHandler(w, req, err)
 		return
 	}
 	json.NewEncoder(w).Encode(article)
@@ -44,7 +44,7 @@ func (c *ArticleController) ArticleListHandler(w http.ResponseWriter, req *http.
 		page, err = strconv.Atoi(p[0])
 		if err != nil || page < 1 {
 			err = apperrors.BadParam.Wrap(err, "queryparam must be number")
-			http.Error(w, "Invalid query parameter (in handler)", http.StatusBadRequest)
+			apperrors.ErrorHandler(w, req, err)
 			return
 		}
 	} else {
@@ -53,7 +53,7 @@ func (c *ArticleController) ArticleListHandler(w http.ResponseWriter, req *http.
 
 	articles, err := c.service.GetArticleListService(page)
 	if err != nil {
-		http.Error(w, "fail internal exec\n", http.StatusInternalServerError)
+		apperrors.ErrorHandler(w, req, err)
 		return
 	}
 	json.NewEncoder(w).Encode(articles)
@@ -63,13 +63,13 @@ func (c *ArticleController) ArticleDetailHandler(w http.ResponseWriter, req *htt
 	articleID, err := strconv.Atoi(mux.Vars(req)["id"])
 	if err != nil {
 		err = apperrors.BadParam.Wrap(err, "queryparam must be number")
-		http.Error(w, "Invalid query parameter", http.StatusBadRequest)
+		apperrors.ErrorHandler(w, req, err)
 		return
 	}
 
 	article, err := c.service.GetArticleService(articleID)
 	if err != nil {
-		http.Error(w, "fail internal exec\n", http.StatusInternalServerError)
+		apperrors.ErrorHandler(w, req, err)
 	}
 	json.NewEncoder(w).Encode(article)
 }
@@ -79,13 +79,13 @@ func (c *ArticleController) PostNiceHandler(w http.ResponseWriter, req *http.Req
 	var reqArticle models.Article
 	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil {
 		err = apperrors.ReqBodyDecodeFailed.Wrap(err, "bad request body")
-		http.Error(w, "Fail to decode json\n", http.StatusBadRequest)
+		apperrors.ErrorHandler(w, req, err)
 		return
 	}
 
 	article, err := c.service.PostNiceService(reqArticle)
 	if err != nil {
-		http.Error(w, "fail internal exec\n", http.StatusInternalServerError)
+		apperrors.ErrorHandler(w, req, err)
 		return
 	}
 	json.NewEncoder(w).Encode(article)
