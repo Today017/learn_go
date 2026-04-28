@@ -27,7 +27,7 @@ func (c *ArticleController) PostArticleHandler(w http.ResponseWriter, req *http.
 		return
 	}
 
-	article, err := c.service.PostArticeService(reqArticle)
+	article, err := c.service.PostArticleService(reqArticle)
 	if err != nil {
 		apperrors.ErrorHandler(w, req, err)
 		return

@@ -38,9 +38,9 @@ func (s *MyAppService) GetArticleService(articleID int) (models.Article, error) 
 	return article, nil
 }
 
-// PostArticeService
+// PostArticleService
 // 記事を受け取ってデータベースに挿入し、挿入されたデータを返す
-func (s *MyAppService) PostArticeService(article models.Article) (models.Article, error) {
+func (s *MyAppService) PostArticleService(article models.Article) (models.Article, error) {
 	insertedArticle, err := repositories.InsertArticle(s.db, article)
 	if err != nil {
 		err = apperrors.InsertDataFaild.Wrap(err, "fail to record data")
